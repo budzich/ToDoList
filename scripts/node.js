@@ -11,6 +11,7 @@ export class Node {
     #h3
     #p
     #date
+    #localStorage = {};
     #changeBlock = document.getElementsByClassName('create-change')[0];
     #changeText = document.getElementsByClassName('create-change-text')[0];
     #changeButton = document.getElementsByClassName('create-change-text-button')[0];
@@ -40,34 +41,39 @@ export class Node {
         this.#star = document.createElement('div');
         this.#star.className = 'star';
         this.#star.onclick = () => {
+            this.#localStorage = JSON.parse(localStorage.getItem('main'));
             if (this.#note.classList.contains('favorite')) {
                 this.#note.classList.remove('favorite');
-                localStorage[this.#date] = `0${localStorage[this.#date][1]}${this.#h3.textContent}`;
+                this.#localStorage[this.#date] = `0${this.#localStorage[this.#date][1]}${this.#h3.textContent}`;
             } else {
                 this.#note.classList.add('favorite');
-                localStorage[this.#date] = `1${localStorage[this.#date][1]}${this.#h3.textContent}`;
+                this.#localStorage[this.#date] = `1${this.#localStorage[this.#date][1]}${this.#h3.textContent}`;
             }
+            localStorage.setItem('main', JSON.stringify(this.#localStorage));
         }
 
         this.#del = document.createElement('div');
         this.#del.className = 'delete';
         this.#del.onclick = () => {
             this.#note.remove();
-            localStorage.removeItem(this.#date);
-
-            delete this;
+            this.#localStorage = JSON.parse(localStorage.getItem('main'));
+            delete this.#localStorage[this.#date];
+            localStorage.setItem('main', JSON.stringify(this.#localStorage));
+            this.#note = null;
         }
 
         this.#complete = document.createElement('div');
         this.#complete.className = 'ok';
         this.#complete.onclick = () => {
+            this.#localStorage = JSON.parse(localStorage.getItem('main'));
             if (this.#note.classList.contains('complete')) {
                 this.#note.classList.remove('complete');
-                localStorage[this.#date] = `${localStorage[this.#date][0]}0${this.#h3.textContent}`;
+                this.#localStorage[this.#date] = `${this.#localStorage[this.#date][0]}0${this.#h3.textContent}`;
             } else {
                 this.#note.classList.add('complete');
-                localStorage[this.#date] = `${localStorage[this.#date][0]}1${this.#h3.textContent}`;
+                this.#localStorage[this.#date] = `${this.#localStorage[this.#date][0]}1${this.#h3.textContent}`;
             }
+            localStorage.setItem('main', JSON.stringify(this.#localStorage));
         }
 
         this.#change = document.createElement('div');
@@ -103,7 +109,9 @@ export class Node {
         this.#nowrap.append(this.#complete);
 
         if (!date) {
-            localStorage.setItem(this.#date, `00${string}`);
+            this.#localStorage = JSON.parse(localStorage.getItem('main'));
+            this.#localStorage[this.#date] = `00${string}`;
+            localStorage.setItem('main', JSON.stringify(this.#localStorage));
         }
     }
 
@@ -115,7 +123,9 @@ export class Node {
             if (this.#changeText.value !== '') {
                 this.#h3.textContent = this.#changeText.value;
                 this.#changeBlock.classList.add('hidden');
-                localStorage[this.#date] = `${localStorage[this.#date][0]}${localStorage[this.#date][1]}${this.#h3.textContent}`;
+                this.#localStorage = JSON.parse(localStorage.getItem('main'));
+                this.#localStorage[this.#date] = `${this.#localStorage[this.#date][0]}${this.#localStorage[this.#date][1]}${this.#h3.textContent}`;
+                localStorage.setItem('main', JSON.stringify(this.#localStorage));
             } else {
                 this.#changeText.focus();
             }
@@ -131,11 +141,7 @@ export class Node {
     }
 
     getComplete() {
-        if (+localStorage.getItem(this.#date)[1]) {
-            return 1;
-        } else {
-            return 0;
-        }
+        return +this.#localStorage[this.#date][1] ? 1 : 0;
     }
 
     reverse(note) {

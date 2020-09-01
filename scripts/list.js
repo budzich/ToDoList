@@ -4,6 +4,8 @@ export class List {
     #string;
     #date
     #list = [];
+    #sortList = [];
+    #localStorage = {};
     #sort = document.getElementsByClassName('select')[0].value;
     #favoriteSort = document.getElementsByClassName('favorite-sort')[0];
     #createBlock = document.getElementsByClassName('create')[0];
@@ -11,20 +13,29 @@ export class List {
     #createButton = document.getElementsByClassName('create-text-button')[0];
 
     constructor() {
-        for (let i = 0; i < localStorage.length; i++) {
-            this.#date = localStorage.key(i);
+        if (!localStorage.hasOwnProperty('main')) {
+            localStorage.setItem('main', JSON.stringify(this.#localStorage));
+        }
 
-            this.#list.push(new Node(localStorage.getItem(this.#date).slice(2), this.#date, +localStorage.getItem(this.#date)[0], +localStorage.getItem(this.#date)[1]));
+        this.#localStorage = JSON.parse(localStorage.getItem('main'));
+        for (let date in this.#localStorage) {
+            this.#date = date;
+            this.#list.push(new Node(
+                this.#localStorage[this.#date].slice(2),
+                this.#date,
+                +this.#localStorage[this.#date][0],
+                +this.#localStorage[this.#date][1]
+            ));
         }
 
         this.sort();
 
-        setTimeout(() => {
-            let arr = document.getElementsByClassName('ok');
-            [...arr].forEach(x => x.addEventListener("click", () => {
-                this.sort();
-            }))
-        }, 0);
+        let arr;
+
+        arr = document.getElementsByClassName('ok');
+        [...arr].forEach(x => x.addEventListener("click", () => {
+            this.sort();
+        }));
 
         this.#favoriteSort.onclick = () => {
             if (this.#favoriteSort.classList.contains('yes')) {
@@ -45,7 +56,6 @@ export class List {
         document.getElementsByClassName('plus')[1].onclick = () => {
             this.create();
 
-
             if (this.#favoriteSort.classList.contains('yes')) {
                 this.#favoriteSort.classList.remove('yes');
                 document.getElementsByClassName('list')[0].classList.remove('only-favorite')
@@ -61,13 +71,12 @@ export class List {
             if (this.#createText.value !== '') {
                 this.#string = this.#createText.value;
                 this.#createBlock.classList.add('hidden');
-                setTimeout(() => {
-                    let arr = document.getElementsByClassName('ok');
-                    [...arr].forEach(x => x.addEventListener("click", () => {
-                        this.sort();
-                    }))
-                }, 0);
-                return this.#list.push(new Node(this.#string));
+                this.#list.push(new Node(this.#string));
+                let arr;
+                arr = document.getElementsByClassName('ok');
+                [...arr].forEach(x => x.addEventListener("click", () => {
+                    this.sort();
+                }));
             } else {
                 this.#createText.focus();
             }
@@ -77,34 +86,34 @@ export class List {
     sort() {
         this.#sort = document.getElementsByClassName('select')[0].value;
 
-        for (let i = 0; i < this.#list.length; i++) {
-            if (!this.#list[i]) {
-                this.#list.splice(i, 1);
-            }
-        }
+        this.#sortList = this.#list.filter(x => x.getNote() !== null);
 
         switch (this.#sort) {
             case 'old':
-                this.#list.sort((a, b) => b.getDate() - a.getDate());
-
+                this.#sortList.sort((b, a) => this.DateSort(a, b));
                 break;
             case 'new':
-                this.#list.sort((a, b) => a.getDate() - b.getDate());
-
+                this.#sortList.sort((a, b) => this.DateSort(a, b));
                 break;
-
             case 'complete':
-                this.#list.sort((a, b) => a.getComplete() - b.getComplete());
-
+                this.#sortList.sort((a, b) => this.CompleteSort(a, b));
                 break;
-            case 'no-complete':
-                this.#list.sort((a, b) => b.getComplete() - a.getComplete());
+            default:
+                this.#sortList.sort((b, a) => this.CompleteSort(a, b));
         }
 
-        for (let j = 1; j < this.#list.length; j++) {
-            for (let i = 1; i < this.#list.length; i++) {
-                this.#list[i].reverse(this.#list[i - 1].getNote());
+        for (let j = 1; j < this.#sortList.length; j++) {
+            for (let i = 1; i < this.#sortList.length; i++) {
+                this.#sortList[i].reverse(this.#sortList[i - 1].getNote());
             }
         }
+    }
+
+    DateSort(a, b) {
+        return a.getDate() - b.getDate();
+    }
+
+    CompleteSort(a, b) {
+        return a.getComplete() - b.getComplete();
     }
 }
