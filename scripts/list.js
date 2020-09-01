@@ -90,16 +90,16 @@ export class List {
 
         switch (this.#sort) {
             case 'old':
-                this.#sortList.sort((b, a) => this.DateSort(a, b));
+                this.#sortList.sort((b, a) => this.dateSort(a, b));
                 break;
             case 'new':
-                this.#sortList.sort((a, b) => this.DateSort(a, b));
+                this.#sortList.sort((a, b) => this.dateSort(a, b));
                 break;
             case 'complete':
-                this.#sortList.sort((a, b) => this.CompleteSort(a, b));
+                this.#sortList.sort((a, b) => this.completeSort(a, b));
                 break;
             default:
-                this.#sortList.sort((b, a) => this.CompleteSort(a, b));
+                this.#sortList.sort((b, a) => this.completeSort(a, b));
         }
 
         for (let j = 1; j < this.#sortList.length; j++) {
@@ -109,11 +109,11 @@ export class List {
         }
     }
 
-    DateSort(a, b) {
+    dateSort(a, b) {
         return a.getDate() - b.getDate();
     }
 
-    CompleteSort(a, b) {
+    completeSort(a, b) {
         return a.getComplete() - b.getComplete();
     }
 }
